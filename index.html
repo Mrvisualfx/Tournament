@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teleturniej - Start</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+    #background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+    #background img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        animation: backgroundSlide 30s linear infinite;
+        filter: blur(10px); /* Dodajemy efekt rozmycia */
+    }
+    @keyframes backgroundSlide {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    #container {
+        position: relative;
+        margin: 150px auto; /* Zwiększamy margines */
+        padding: 30px; /* Zwiększamy padding */
+        width: 1000px; /* Zwiększamy szerokość */
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        font-size: 50px;
+    }
+    h1 {
+        margin-top: 0;
+        font-size: 1.5em; /* Zwiększamy rozmiar czcionki */
+    }
+    label {
+        display: block;
+        margin-bottom: 15px; /* Zwiększamy odstęp */
+        font-size: 1.2em; /* Zwiększamy rozmiar czcionki */
+    }
+    input[type="text"] {
+        width: 100%;
+        padding: 10px; /* Zwiększamy padding */
+        margin-bottom: 25px; /* Zwiększamy odstęp */
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 1.2em; /* Zwiększamy rozmiar czcionki */
+    }
+    button {
+        padding: 15px 30px; /* Zwiększamy padding */
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        font-size: 1.2em; /* Zwiększamy rozmiar czcionki */
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+</style>
+</head>
+<body>
+
+<div id="background">
+    <img src="background.jpg" alt="Background">
+</div>
+
+<div id="container">
+    <h1>Teleturniej - Start</h1>
+    <div>
+        <label for="player1">Gracz 1:</label>
+        <input type="text" id="player1" placeholder="Podaj imię">
+    </div>
+    <div>
+        <label for="player2">Gracz 2:</label>
+        <input type="text" id="player2" placeholder="Podaj imię">
+    </div>
+    <button onclick="startGame()">Nowa gra</button>
+</div>
+
+<script>
+    function startGame() {
+        const player1Name = document.getElementById('player1').value.trim();
+        const player2Name = document.getElementById('player2').value.trim();
+
+        if (player1Name === "" || player2Name === "") {
+            alert("Please enter names for both players.");
+            return;
+        }
+
+        const players = [player1Name, player2Name];
+        const startingPlayer = players[Math.floor(Math.random() * players.length)];
+
+        sessionStorage.setItem('player1Name', player1Name);
+        sessionStorage.setItem('player2Name', player2Name);
+        sessionStorage.setItem('startingPlayer', startingPlayer);
+        sessionStorage.setItem('currentPlayer', startingPlayer); // Dodaj ustawienie currentPlayer
+
+        window.location.href = 'game.html';
+    }
+</script>
+
+</body>
+</html>

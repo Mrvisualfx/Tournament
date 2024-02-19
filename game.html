@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teleturniej - Gra</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+    #background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+    #background img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        animation: backgroundSlide 30s linear infinite;
+        filter: blur(10px);
+    }
+    @keyframes backgroundSlide {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    .player-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .player-info div {
+        display: flex;
+        align-items: center;
+        font-size: 32px;
+
+    }
+    .player-info label {
+        margin-right: 10px;
+    }
+    .player-name {
+        font-weight: bold;
+        font-size: 32px;
+    }
+    .player-points {
+        background-color: #4CAF50;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 32px;
+
+    }
+    h1 {
+        color: rgb(255, 255, 255);
+        text-align: center;
+    }
+    .game-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 80%;
+        margin: 50px auto;
+    }
+    .game-cell {
+        position: relative;
+        width: calc(25% - 10px);
+        height: 120px;
+        margin: 5px;
+        background-color: lightgray;
+        border: 1px solid black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 50px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .answer-button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin: 5px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .current-player-info {
+        text-align: center;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+        margin: 20px auto;
+        font-size: 30px;
+    }
+    .current-player-info p {
+        margin: 0;
+    }
+    .current-player-info .player-name {
+        font-weight: bold;
+    }
+    .current-player-info .player-turn {
+        font-style: italic;
+    }
+    .winner-message {
+        text-align: center;
+        padding: 10px;
+        background-color: rgba(0, 255, 85, 0.8);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+        margin: 20px auto;
+        font-size: 50px;
+    }
+</style>
+</head>
+<body>
+
+<div id="background">
+    <img src="background.jpg" alt="Background">
+</div>
+
+<div class="player-info">
+    <div>
+        <label for="player1Name">Gracz 1:</label>
+        <span class="player-name" id="player1Name"></span>
+        <span class="player-points" id="player1Points"></span>
+    </div>
+    <div>
+        <label for="player2Name">Gracz 2:</label>
+        <span class="player-name" id="player2Name"></span>
+        <span class="player-points" id="player2Points"></span>
+    </div>
+</div>
+
+<h1>Teleturniej - Gra</h1>
+
+<div class="game-container">
+    <div class="game-cell" data-points="1000" id="Q1">1000</div>
+    <div class="game-cell" data-points="1000" id="Q2">1000</div>
+    <div class="game-cell" data-points="1000" id="Q3">1000</div>
+    <div class="game-cell" data-points="1000" id="Q4">1000</div>
+    <div class="game-cell" data-points="1000" id="Q5">1000</div>
+    <div class="game-cell" data-points="1000" id="Q6">1000</div>
+    <div class="game-cell" data-points="500" id="Q7">500</div>
+    <div class="game-cell" data-points="500" id="Q8">500</div>
+    <div class="game-cell" data-points="500" id="Q9">500</div>
+    <div class="game-cell" data-points="500" id="Q10">500</div>
+    <div class="game-cell" data-points="500" id="Q11">500</div>
+    <div class="game-cell" data-points="100" id="Q12">100</div>
+    <div class="game-cell" data-points="100" id="Q13">100</div>
+    <div class="game-cell" data-points="100" id="Q14">100</div>
+    <div class="game-cell" data-points="100" id="Q15">100</div>
+    <div class="game-cell" data-points="100" id="Q16">100</div>
+</div>
+
+<div class="current-player-info">
+    <p><span class="player-name" id="currentPlayerName"></span> - <span class="player-turn">Teraz odpowiada</span></p>
+</div>
+
+<div class="winner-message" id="winnerMessage"></div>
+
+<script>
+    const player1Name = sessionStorage.getItem('player1Name');
+    const player2Name = sessionStorage.getItem('player2Name');
+    let currentPlayer = sessionStorage.getItem('currentPlayer');
+    const visitedQuestions = JSON.parse(sessionStorage.getItem('visitedQuestions')) || [];
+
+    document.getElementById('player1Name').textContent = player1Name;
+    document.getElementById('player2Name').textContent = player2Name;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const questionId = urlParams.get('question');
+    const points = urlParams.get('points');
+    const player1Points = urlParams.get('player1Points');
+    const player2Points = urlParams.get('player2Points');
+
+    document.getElementById('player1Points').textContent = ` punkty: ${player1Points || 0}`;
+    document.getElementById('player2Points').textContent = ` punkty: ${player2Points || 0}`;
+    document.getElementById('currentPlayerName').textContent = currentPlayer;
+
+    const gameCells = document.querySelectorAll('.game-cell');
+    gameCells.forEach(cell => {
+        const questionId = cell.id;
+        if (visitedQuestions.includes(questionId)) {
+            cell.disabled = true;
+            cell.style.opacity = '0.5';
+        } else {
+            cell.addEventListener('click', function(event) {
+                const points = cell.getAttribute('data-points');
+                visitedQuestions.push(questionId);
+                sessionStorage.setItem('visitedQuestions', JSON.stringify(visitedQuestions));
+                showQuestion(questionId, points);
+            });
+        }
+    });
+
+    function showQuestion(questionId, points) {
+        sessionStorage.setItem('currentQuestion', questionId);
+        sessionStorage.setItem('currentPlayer', currentPlayer);
+        window.location.href = `question.html?question=${questionId}&points=${points}`;
+    }
+
+    function areAllQuestionsVisited() {
+        return visitedQuestions.length === gameCells.length;
+    }
+
+    function showWinner(player) {
+        const winnerMessage = `Gracz ${player} wygrał!`;
+        document.getElementById('winnerMessage').textContent = winnerMessage;
+    }
+
+    function draw(player) {
+        const winnerMessage = `${player}`;
+        document.getElementById('winnerMessage').textContent = winnerMessage;
+    }
+
+    if (areAllQuestionsVisited()) {
+        const player1Points = parseInt(sessionStorage.getItem(player1Name)) || 0;
+        const player2Points = parseInt(sessionStorage.getItem(player2Name)) || 0;
+        if (player1Points > player2Points) {
+            showWinner(player1Name);
+        } else if (player2Points > player1Points) {
+            showWinner(player2Name);
+        } else {
+            draw('Remis');
+        }
+    }
+</script>
+
+</body>
+</html>

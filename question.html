@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pytanie</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+    #background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+    #background img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        animation: backgroundSlide 30s linear infinite;
+        filter: blur(10px);
+    }
+    @keyframes backgroundSlide {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    .question-container {
+        width: 1200px;
+        margin: 50px auto;
+        text-align: center;
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+    .player-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+    .player-info div {
+        margin-bottom: 10px;
+    }
+    .player-name {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    .current-player {
+        font-style: italic;
+        color: blue;
+    }
+    .answer-button {
+        padding: 20px 40px;
+        font-size: 32px;
+        margin: 10px;
+        cursor: pointer;
+        border: none;
+        border-radius: 10px;
+        background-color: #ffffff;
+        color: rgb(0, 0, 0);
+        transition: background-color 0.3s;
+    }
+    .answer-button:hover {
+        background-color: #45a049;
+    }
+    button {
+        padding: 20px 40px;
+        font-size: 32px;
+        margin: 10px;
+        cursor: pointer;
+        border: none;
+        border-radius: 10px;
+        background-color: #7a7a7a;
+        color: white;
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    .correct {
+        background-color: green;
+        color: white;
+        padding: 20px 40px;
+        border-radius: 10px;
+        margin-top: 40px;
+        font-size: 32px;
+    }
+    .incorrect {
+        background-color: red;
+        color: white;
+        padding: 20px 40px;
+        border-radius: 10px;
+        margin-top: 40px;
+        font-size: 32px;
+    }
+    #question {
+        font-size: 32px;
+    }
+</style>
+</head>
+<body>
+
+<div id="background">
+    <img src="background.jpg" alt="Background">
+</div>
+
+<div class="question-container">
+    <div class="player-info">
+        <div>
+            <span class="player-name">Gracz 1:</span>
+            <span id="player1Name"></span>
+            <span id="player1Points"></span>
+        </div>
+        <div>
+            <span class="player-name">Gracz 2:</span>
+            <span id="player2Name"></span>
+            <span id="player2Points"></span>
+        </div>
+        <div>
+            <span class="player-name">Teraz odpowiada:</span>
+            <span id="currentPlayer" class="current-player"></span>
+        </div>
+    </div>
+    <h2>Question</h2>
+    <p id="question"></p>
+    <div id="answerButtons">
+        <!-- Buttons will be added here -->
+    </div>
+    <button onclick="goBack()">Powrót do gry</button>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const questionId = params.get('question');
+    const points = params.get('points');
+    const currentPlayer = sessionStorage.getItem('currentPlayer');
+    const currentPlayerPoints = parseInt(sessionStorage.getItem(currentPlayer)) || 0;
+
+    document.getElementById('currentPlayer').textContent = currentPlayer;
+    document.getElementById('player1Name').textContent = sessionStorage.getItem('player1Name');
+    document.getElementById('player2Name').textContent = sessionStorage.getItem('player2Name');
+    document.getElementById('player1Points').textContent = ` (punkty: ${sessionStorage.getItem(sessionStorage.getItem('player1Name')) || 0})`;
+    document.getElementById('player2Points').textContent = ` (punkty: ${sessionStorage.getItem(sessionStorage.getItem('player2Name')) || 0})`;
+
+    const questions = {
+        Q1: {
+            question: "Czym jest system wbudowany?",
+            options: [
+                { text: "a. Program komputerowy będący integralną częścią komputera", value: "a" },
+                { text: "b. System komputerowy używany wyłącznie w urządzeniach inteligentnych", value: "b" },
+                { text: "c. System komputerowy oferowany przez producenta", value: "c" },
+                { text: "d. Każdy moduł komputera niezależnie od producenta", value: "d" }
+            ],
+            correctAnswer: "a"
+        },
+        Q2: {
+            question: "Kod przyporządkowujący liczby z zakresu 0-127, literom języku angielskiego, cyfrom, symbolom to:",
+            options: [
+                { text: "a. AESC", value: "a" },
+                { text: "b. ANSI", value: "b" },
+                { text: "c. ASCII", value: "c" },
+                { text: "d. Kod pozycyjny", value: "d" }
+            ],
+            correctAnswer: "c"
+        },
+        Q3: {
+            question: "Pierwszą przeglądarką graficzną, która zyskała znaczącą liczbę użytkowników była:",
+            options: [
+                { text: "a. Google Chrome", value: "a" },
+                { text: "b. Internet Explorer", value: "b" },
+                { text: "c. Mosaic", value: "c" },
+                { text: "d. Netscape Navigator", value: "d" }
+            ],
+            correctAnswer: "c"
+        },
+        Q4: {
+            question: "Elementy maszyny Turinga to:",
+            options: [
+                { text: "a. Bletka informacyjna, lampy symboliczne, procesor", value: "a" },
+                { text: "b. Ruchoma głowica zapisująco-odczytująca, nieskończenie długa taśma, układ sterowania głowicą", value: "b" },
+                { text: "c. Pamięć, urządzenia wejścia-wyjścia, procesor", value: "c" },
+                { text: "d. Układ sterujący, pamięć RAM, podsystem BIOS", value: "d" }
+            ],
+            correctAnswer: "b"
+        },
+        Q5: {
+            question: "Floating Point Operations Per Second” to w skrócie:",
+            options: [
+                { text: "a. FLOPS", value: "a" },
+                { text: "b. FOPS", value: "b" },
+                { text: "c. FPOS", value: "c" },
+                { text: "d. FPOPS", value: "d" }
+            ],
+            correctAnswer: "a"
+        },
+        Q6: {
+            question: "(modulo / %) 2 * 7 mod 7 jest równe ",
+            options: [
+                { text: "a. 0", value: "a" },
+                { text: "b. 1", value: "b" },
+                { text: "c. 2", value: "c" },
+                { text: "d. 7", value: "d" }
+            ],
+            correctAnswer: "a"
+        },
+        Q7: {
+            question: "Zakończenie kabli typu skrętka w sieciach standardu Ethernet to:",
+            options: [
+                { text: "a. ETH", value: "a" },
+                { text: "b. BJ-15", value: "b" },
+                { text: "c. RJ-45", value: "c" },
+                { text: "d. 8P8C", value: "d" }
+            ],
+            correctAnswer: "c"
+        },
+        Q8: {
+            question: "Który Tier jest najszybszy? (prędkość pamięci)",
+            options: [
+                { text: "a. 0", value: "a" },
+                { text: "b. 1", value: "b" },
+                { text: "c. 2", value: "c" },
+                { text: "d. 3", value: "d" }
+            ],
+            correctAnswer: "a"
+        },
+        Q9: {
+            question: "Z jakim rozszerzeniem będzie zapisana grafika wektorowa?",
+            options: [
+                { text: "a. PPM", value: "a" },
+                { text: "b. VNG", value: "b" },
+                { text: "c. PNG", value: "c" },
+                { text: "d. SVG", value: "d" }
+            ],
+            correctAnswer: "d"
+        },
+        Q10: {
+            question: "Z jakiego portu korzystały kiedyś klawiatury i myszki?",
+            options: [
+                { text: "a. DVI", value: "a" },
+                { text: "b. KMP", value: "b" },
+                { text: "c. PS/2", value: "c" },
+                { text: "d. ERA", value: "d" }
+            ],
+            correctAnswer: "c"
+        },
+        Q11: {
+            question: "Co to jest Unicode?",
+            options: [
+                { text: "a. Zestaw znaków mający obejmować wszystkie pisma na świecie", value: "a" },
+                { text: "b. Zestaw znaków zapisany na 4 bajtach.", value: "b" },
+                { text: "c. Zestaw znaków zapisany na 255 bitach.", value: "c" },
+                { text: "d. Tablica posiadająca 255 znaków.", value: "d" }
+            ],
+            correctAnswer: "a"
+        },
+        Q12: {
+            question: "Co NIE JEST językiem programowania?",
+            options: [
+                { text: "a. HTML", value: "a" },
+                { text: "b. Python", value: "b" },
+                { text: "c. C++", value: "c" },
+                { text: "d. MariaDB", value: "d" }
+            ],
+            correctAnswer: "d"
+        },
+        Q13: {
+            question: "Najmniejsza jednostka informacji to:",
+            options: [
+                { text: "a. Bajt", value: "a" },
+                { text: "b. Bit", value: "b" },
+                { text: "c. Petabajt", value: "c" },
+                { text: "d. Megabajt", value: "d" }
+            ],
+            correctAnswer: "b"
+        },
+        Q14: {
+            question: "1 Gigabajt (GB) to:",
+            options: [
+                { text: "a. 1048 MB", value: "a" },
+                { text: "b. 1000 MB", value: "b" },
+                { text: "c. 1016 MB", value: "c" },
+                { text: "d. 1024 MB", value: "d" }
+            ],
+            correctAnswer: "d"
+        },
+        Q15: {
+            question: "Kto nie jest producentem zewnętrznych kart graficznych?",
+            options: [
+                { text: "a. NVIDIA", value: "a" },
+                { text: "b. AMD", value: "b" },
+                { text: "c. RADEON", value: "c" },
+                { text: "d. INTEL", value: "d" }
+            ],
+            correctAnswer: "c"
+        },
+        Q16: {
+            question: "7 w zapisie binarnym to:",
+            options: [
+                { text: "a. 0111", value: "a" },
+                { text: "b. 1110", value: "b" },
+                { text: "c. 1011", value: "c" },
+                { text: "d. 0101", value: "d" }
+            ],
+            correctAnswer: "a"
+        },
+        // Dodaj więcej pytań tutaj...
+    };
+
+    const question = questions[questionId];
+    document.getElementById('question').textContent = question.question;
+
+    const answerButtonsContainer = document.getElementById('answerButtons');
+    question.options.forEach(option => {
+        const button = document.createElement('button');
+        button.className = 'answer-button';
+        button.textContent = option.text;
+        button.onclick = function() { checkAnswer(option.value); };
+        answerButtonsContainer.appendChild(button);
+        answerButtonsContainer.appendChild(document.createElement('br'));
+    });
+
+    function checkAnswer(selectedAnswer) {
+        const correctAnswer = question.correctAnswer;
+        const answerButtons = document.querySelectorAll('.answer-button');
+        answerButtons.forEach(button => button.disabled = true);
+
+        if (selectedAnswer === correctAnswer) {
+            document.body.innerHTML += `<h2 class="correct">Correct!</h2>`;
+            sessionStorage.setItem(currentPlayer, currentPlayerPoints + parseInt(points));
+        } else {
+            document.body.innerHTML += `<h2 class="incorrect">Incorrect!</h2>`;
+            sessionStorage.setItem(currentPlayer, currentPlayerPoints);
+        }
+    }
+
+    function goBack() {
+        const player1Name = sessionStorage.getItem('player1Name');
+        const player2Name = sessionStorage.getItem('player2Name');
+        const player1Points = parseInt(sessionStorage.getItem(player1Name)) || 0;
+        const player2Points = parseInt(sessionStorage.getItem(player2Name)) || 0;
+        const nextPlayer = currentPlayer === player1Name ? player2Name : player1Name;
+        sessionStorage.setItem('currentPlayer', nextPlayer);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const questionId = urlParams.get('question');
+        const points = urlParams.get('points');
+        window.location.href = `game.html?question=${questionId}&points=${points}&player1Points=${player1Points}&player2Points=${player2Points}`;
+    }
+</script>
+
+</body>
+</html>
