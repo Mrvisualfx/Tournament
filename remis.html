@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teleturniej - Remis</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+
+    }
+    .header {
+        background-color: #4CAF50;
+        color: white;
+        text-align: center;
+        padding: 20px;
+    }
+    .container {
+        width: 80%;
+        margin: 20px auto;
+        background-color: rgba(255, 255, 255, 0.8); /* Dodatkowe tło dla kontenera */
+        border-radius: 10px; /* Zaokrąglenie krawędzi */
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Cień */
+    }
+    .question {
+        background-color: lightgray;
+        padding: 20px;
+        border-radius: 5px;
+        font-size: 40px;
+    }
+    .answer-button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin-top: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .answer-option {
+        display: block;
+        margin-bottom: 10px;
+    }
+    .winner-message {
+        text-align: center;
+        padding: 20px;
+        background-color: rgba(0, 255, 85, 0.8);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+        margin-top: 20px;
+        font-size: 24px;
+
+        
+    }
+    #background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+    #background img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        animation: backgroundSlide 30s linear infinite;
+        filter: blur(10px);
+    }
+</style>
+</head>
+<body>
+
+<div id="background">
+    <img src="background.jpg" alt="Background">
+</div>
+
+<div class="header">
+    <h1>Teleturniej - Remis</h1>
+    <div id="points"></div>
+</div>
+
+<div class="container">
+    <div class="question" id="question">
+        <h2>Pytanie za 10000 punktów:</h2>
+        <p id="questionText">Jakie jest zastosowanie algorytmu szyfrowania RSA?</p>
+        <label class="answer-option"><input type="radio" name="answer" value="A"> A. Kompresja plików</label>
+        <label class="answer-option"><input type="radio" name="answer" value="B"> B. Wyszukiwanie wzorców w tekście</label>
+        <label class="answer-option"><input type="radio" name="answer" value="C"> C. Bezpieczna komunikacja przez internet</label>
+        <label class="answer-option"><input type="radio" name="answer" value="D"> D. Analiza danych genetycznych</label>
+        <button class="answer-button" id="answerButton">Odpowiedz</button>
+    </div>
+
+    <div class="winner-message" id="winnerMessage"></div>
+</div>
+
+<script>
+    // Odczytanie liczby punktów z sessionStorage
+    const player1Points = sessionStorage.getItem('player1Points') || 0;
+    const player2Points = sessionStorage.getItem('player2Points') || 0;
+
+    // Wyświetlenie liczby punktów zdobytych przez graczy w poprzedniej rozgrywce
+
+    const player1Name = sessionStorage.getItem('player1Name');
+    const player2Name = sessionStorage.getItem('player2Name');
+
+    // Losowanie gracza, który będzie odpowiadał na pytanie
+    const currentPlayer = Math.random() < 0.5 ? player1Name : player2Name;
+    document.getElementById('answerButton').innerText = `Odpowiada: ${currentPlayer}`;
+
+    document.getElementById('answerButton').addEventListener('click', function() {
+        // Sprawdzenie odpowiedzi gracza
+        const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+        if (selectedAnswer && selectedAnswer.value === "C") {
+            // Jeśli odpowiedź jest poprawna, wyświetl komunikat o zwycięstwie
+            document.getElementById('winnerMessage').innerText = `Gratulacje! ${currentPlayer} wygrywa i otrzymuje 10000 punktów!`;
+        } else {
+            // Jeśli odpowiedź jest niepoprawna, wyświetl komunikat o zwycięstwie przeciwnika
+            const opponent = currentPlayer === player1Name ? player2Name : player1Name;
+            document.getElementById('winnerMessage').innerText = `Niestety, ${opponent} wygrywa i otrzymuje 10000 punktów!`;
+        }
+    });
+</script>
+
+</body>
+</html>
